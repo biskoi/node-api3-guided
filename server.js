@@ -33,7 +33,7 @@ module.exports = server;
 
 function logger(req, res, next) { 
   console.log(req.method, req.originalUrl, 'req.query', req.query);
-  next(); // call next to pass the data on to the next mw, otherwise it stops here
+  next(); // call next to pass the data on to the next mw, otherwise it stops here - can also use next with an arg to jump to another mw
 };
 
 // write and use middleware to
@@ -48,10 +48,16 @@ function gatekeeper(pass) { // Needs to return the actual MW function so express
     // const {pass} = req.query;
   
     if (req.query.pass === pass) {
-      next();
+      next(); // empty args in next will call the next Normal MW
     } else {
-      res.status(400).json({message: 'Incorrect password'});
+      // res.status(400).json({message: 'Incorrect password'});
+      next('any value - next just needs to be invoked with an arg, and express will consider THIS value to be the "err"')
     };
   };
 
 };
+
+// Error handling - express will look at MW with 4 args to be an error handler - mw(err, req, res, next)
+server.use((err, req, res, next) => {
+  res.status(400).json({msg: err})
+});
